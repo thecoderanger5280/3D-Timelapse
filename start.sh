@@ -1,46 +1,25 @@
 #!/bin/bash
 
-#pinctrl set 17 ip pu
-#pinctrl set 22 ip pu
-#pinctrl set 27 ip pu
-
 topic_name="esp32/data"
 user="user"
 pass="pass"
 
 d=0
-
-#while true; do
-  #if [ $(pinctrl lev 22) == 0 ]; then
-    #mkdir /path/to/file/t$d
-    #n=0
-    #. ./save_pic.sh
-    #while true; do
-      #if [ $(pinctrl lev 17) == 0 ]; then
-        #sleep 0.1
-        #libcamera-jpeg -t 1 -o /path/to/file/t$d/pic$n.jpg --nopreview
-        #((n++))
-        #sleep 0.1
-      #fi
-      #if [ $(pinctrl lev 27 == 0); then
-        #break
-      #fi
-      #sleep 0.5
-    #done
-    #((d++))
-  #fi
-#done
 while true; do
   while read data; do
     if [ ${data:0:1} == 0 ]; then
-      mkdir -p /path/to/file/timelapse$d
+      mkdir -p /path/to/timelapse$d
       p=0
       while read data1; do
         if [ ${data1:1:1} == 0 ]; then
-          libcamera-still -t .11 -o /path/to/file/timelapse$d/pic$p.jpg
-          ((p++))
+          libcamera-still -t .1 -o /path/to/timelapse$d/pic$p.jpg
+          if [ -f /path/to/timelapse$d/pic$p.jpg ]; then
+            ((p++))
+          fi
         fi
         if [ ${data1:2:1} == 0 ]; then
+          ffmpeg -y -framerate 10 -i /path/to/files/timelapse0/pic%d.jpg /path/to/save/timelapse$d.mp4
+          rm -rf /path/to/timelapse$d
           break
         fi
       done < <(mosquitto_sub -t $topic_name -u $user -P $pass)
